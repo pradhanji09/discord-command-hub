@@ -4,13 +4,14 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "start:dev": "node --watch ./src/server.js",
     "start:prod": "node ./src/server.js",
     "migrate:make": "knex migrate:make",
     "migrate:latest": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
-    "migrate:list": "knex migrate:list"
+    "migrate:list": "knex migrate:list",
+    "register-commands": "node scripts/registerGuildCommands.js"
   },
   "keywords": [],
   "author": "",
