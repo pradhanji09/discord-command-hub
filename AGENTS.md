@@ -1,14 +1,65 @@
-# Project Rules & Architecture Guardrails
+# AGENTS.md
 
-## Tech Stack
+## Project
 
-- **Backend:** Fastify (Node.js)
-- **Frontend:** React (Admin Dashboard)
-- **Database:** Supabase (PostgreSQL)
+Discord slash-command bot with an admin dashboard. Discord posts signed
+interactions to our backend; we verify, dedup, record, reply, and mirror a
+notification to a second channel. Admins view logs and config in a web app.
 
-## Core Engineering & Security Standards
+## Stack
 
-1. **Signature Verification:** Every incoming request to `/interactions` must verify Discord's `X-Signature-Ed25519` and `X-Signature-Timestamp` headers using the raw request body _before_ parsing JSON.
-2. **Idempotency & Dedup:** Prevent duplicate execution by deduplicating incoming requests on their unique interaction ID stored in Supabase.
-3. **Response Window:** Always respond or defer to Discord within the 3-second window. Use follow-up API calls for longer tasks (AI triage, database writes, mirror notifications).
-4. **Secret Safety:** Never log, print, or expose bot tokens, public keys, webhook URLs, or passwords in logs, client code, or public repository files.
+- Backend: Node.js, Fastify (backend/)
+- Frontend: React, Vite (frontend/)
+- Database: Supabase Postgres, accessed only from the backend
+- Hosting: backend on AWS (HTTPS required), frontend on Vercel
+
+## Commands
+
+- Backend dev: `cd backend && npm run start:dev`
+- Frontend dev: `cd frontend && npm run start:dev`
+- Register slash commands: `cd backend && npm run register-commands`
+
+## Architecture
+
+Feature modules under `backend/src/<feature>/`, each with layers:
+routes -> handler -> service -> repository. Dependencies point downward only.
+
+- routes: URL, method, schema. No logic.
+- handler: request/response shaping. No SQL.
+- service: business rules. No HTTP or SQL knowledge.
+- repository: the only code that queries the database.
+  Shared code (config, logger, db, errors) lives in `backend/src/common/`.
+  Each slash command is its own handler registered by name (no big if/else).
+  Mirror channels sit behind one common notifier interface.
+
+## Security and reliability rules (non-negotiable)
+
+1. Verify `X-Signature-Ed25519` and `X-Signature-Timestamp` on the RAW body
+   before parsing JSON. Raw-body handling is scoped to `/interactions` only.
+   Reject invalid requests with 401. Answer PING (type 1) with PONG.
+2. Dedup on interaction ID using a unique database constraint. Insert before
+   acting; a duplicate must not trigger a second action.
+3. Respond within 3 seconds. Defer, then send a follow-up for slow work
+   (mirror notification, AI). The dedup insert and record stay synchronous.
+4. A failed downstream call (mirror, AI) must be stored and retried, never dropped.
+5. Never log or expose the bot token, public key, webhook URLs, DB credentials,
+   or passwords. Secrets come from environment variables only.
+
+## Conventions
+
+- Validate all request input with Fastify schemas.
+- Use structured logging; redact secrets.
+- Keep `.env.example` updated with variable names only, no real values.
+
+## Git workflow
+
+- Linear history: rebase, no merge commits.
+- One small working change per commit, with a clear message.
+
+## Boundaries
+
+- Do not commit `.env` or any secret.
+- Do not use paid services or anything requiring a credit card.
+- Do not add stretch features (UI-configurable rules, modals, buttons, AI, multi-server)
+  until the core flow works end to end.
+- Ask before adding new dependencies or changing the folder structure.
