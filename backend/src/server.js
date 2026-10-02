@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import dotenv from "dotenv";
 import interactionsRoutes from "./interactions/interactions.routes.js";
+import db from "./common/plugins/db.js";
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +21,9 @@ fastify.get("/health", async (request, reply) => {
 
 // Routes
 fastify.register(interactionsRoutes);
+
+//plugins
+fastify.register(db);
 
 // Start
 const start = async () => {
