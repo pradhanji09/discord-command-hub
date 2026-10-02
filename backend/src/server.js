@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import dotenv from "dotenv";
+import interactionsRoutes from "./interactions/interactions.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +17,9 @@ const fastify = Fastify({
 fastify.get("/health", async (request, reply) => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
+
+// Routes
+fastify.register(interactionsRoutes);
 
 // Start
 const start = async () => {
