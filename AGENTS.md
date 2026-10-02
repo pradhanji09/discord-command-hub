@@ -17,20 +17,22 @@ notification to a second channel. Admins view logs and config in a web app.
 
 - Backend dev: `cd backend && npm run start:dev`
 - Frontend dev: `cd frontend && npm run start:dev`
-- Register slash commands: `cd backend && npm run register-commands`
 
 ## Architecture
 
-Feature modules under `backend/src/<feature>/`, each with layers:
-routes -> handler -> service -> repository. Dependencies point downward only.
+Feature modules live under `backend/src/<feature>/`, structured into layers with plain factory-based dependency injection:
+`routes -> handler -> service -> repository`. Dependencies point downward only.
 
-- routes: URL, method, schema. No logic.
-- handler: request/response shaping. No SQL.
-- service: business rules. No HTTP or SQL knowledge.
-- repository: the only code that queries the database.
-  Shared code (config, logger, db, errors) lives in `backend/src/common/`.
-  Each slash command is its own handler registered by name (no big if/else).
-  Mirror channels sit behind one common notifier interface.
+File naming follows layer suffixes (`<name>.routes.js`, `<name>.handler.js`, `<name>.service.js`, `<name>.repository.js`).
+
+- routes: composition root for the feature. Registers URLs, methods, hooks, and schemas. Plain factory functions wire dependencies: `createInteractionsRepository(fastify.db)` -> `createInteractionsService({ repo })` -> `createInteractionsHandlers({ service })`. Contains no business logic.
+- handler: thin request/response shaping. Extracts payload, calls the service, sends the HTTP reply. No business rules and no database code.
+- service: pure business rules. Receives repositories via factory arguments. Knows nothing about Fastify request/reply objects or SQL. The feature dispatcher (e.g. `discordInteractions.service.js`) only routes by interaction type to dedicated action services (`handlePing.js`, `handleSlashCommand.js`).
+- repository: the only place that queries the database using Knex. Each repository is created via a factory (e.g. `createInteractionsRepository(db)`).
+
+Shared code (config, logger, db, errors) lives in `backend/src/common/`.
+Each slash command is its own handler registered by name (no big if/else).
+Mirror channels sit behind one common notifier interface.
 
 ## Security and reliability rules (non-negotiable)
 

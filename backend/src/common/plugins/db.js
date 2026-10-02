@@ -8,6 +8,7 @@ export default fp(async (fastify) => {
 
   fastify.log.info("Database connection established... %j");
 
+  fastify.decorate("db", db);
   fastify.decorate("knex", db);
 
   fastify.addHook("onClose", async (instance) => {

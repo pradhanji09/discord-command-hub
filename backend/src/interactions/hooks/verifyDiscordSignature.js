@@ -34,7 +34,6 @@ export async function verifyDiscordSignature(request, reply) {
 
   try {
     const isValid = await verifyKey(rawBody, signature, timestamp, publicKey);
-
     if (!isValid) {
       return reply.code(401).send({ error: "Invalid request signature" });
     }

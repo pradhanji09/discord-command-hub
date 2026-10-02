@@ -19,11 +19,11 @@ fastify.get("/health", async (request, reply) => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
 
+// Plugins
+fastify.register(db);
+
 // Routes
 fastify.register(interactionsRoutes);
-
-//plugins
-fastify.register(db);
 
 // Start
 const start = async () => {
