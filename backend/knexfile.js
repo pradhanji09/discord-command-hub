@@ -6,6 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const migrationFilesPath = path.resolve(__dirname, "migrations");
+const seedFilesPath = path.resolve(__dirname, "seeds");
+
 // console.log("migrationFilesPath", migrationFilesPath);
 
 const config = {
@@ -18,6 +20,9 @@ const config = {
   migrations: {
     directory: migrationFilesPath,
     tableName: "knex_migrations",
+  },
+  seeds: {
+    directory: seedFilesPath,
   },
 };
 
