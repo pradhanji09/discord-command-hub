@@ -2,11 +2,11 @@ import loginBodySchema from "./schema/login.js";
 import createHandlers from "./handlers/index.js";
 import { authenticate } from "./hooks/authenticate.js";
 import createAdminsRepository from "./repositories/admins.repository.js";
-import createServices from "./services/index.js";
+import createAuthServices from "./services/index.js";
 
 export default async function authRoutes(fastify) {
   const repositories = createAdminsRepository(fastify.db);
-  const services = createServices({ repositories, jwt: fastify.jwt });
+  const services = createAuthServices({ repositories, jwt: fastify.jwt });
   const handlers = createHandlers({ services });
 
   fastify.route({
