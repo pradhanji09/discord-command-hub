@@ -5,6 +5,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import interactionsRoutes from "./interactions/interactions.routes.js";
 import authRoutes from "./auth/auth.routes.js";
+import guildsRoutes from "./guilds/guilds.routes.js";
 import db from "./common/plugins/db.js";
 
 // Load environment variables
@@ -42,6 +43,7 @@ fastify.register(rateLimit, {
 // Routes
 fastify.register(interactionsRoutes);
 fastify.register(authRoutes, { prefix: "/api/auth" });
+fastify.register(guildsRoutes, { prefix: "/api/guilds" });
 
 // Start
 const start = async () => {
